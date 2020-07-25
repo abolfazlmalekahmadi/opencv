@@ -105,40 +105,8 @@ class CanvasImage:
         self.__show_image()  # show image on the canvas
         self.canvas.focus_set()  # set focus on the canvas
 
-    def smaller(self):
-        """ Resize image proportionally and return smaller image """
-        w1, h1 = float(self.imwidth), float(self.imheight)
-        w2, h2 = float(self.__huge_size), float(self.__huge_size)
-        aspect_ratio1 = w1 / h1
-        aspect_ratio2 = w2 / h2  # it equals to 1.0
-        if aspect_ratio1 == aspect_ratio2:
-            image = Image.new('RGB', (int(w2), int(h2)))
-            k = h2 / h1  # compression ratio
-            w = int(w2)  # band length
-        elif aspect_ratio1 > aspect_ratio2:
-            image = Image.new('RGB', (int(w2), int(w2 / aspect_ratio1)))
-            k = h2 / w1  # compression ratio
-            w = int(w2)  # band length
-        else:  # aspect_ratio1 < aspect_ration2
-            image = Image.new('RGB', (int(h2 * aspect_ratio1), int(h2)))
-            k = h2 / h1  # compression ratio
-            w = int(h2 * aspect_ratio1)  # band length
-        i, j, n = 0, 1, round(0.5 + self.imheight / self.__band_width)
-        while i < self.imheight:
-            print('\rOpening image: {j} from {n}'.format(j=j, n=n), end='')
-            band = min(self.__band_width, self.imheight - i)  # width of the tile band
-            self.__tile[1][3] = band  # set band width
-            self.__tile[2] = self.__offset + self.imwidth * i * 3  # tile offset (3 bytes per pixel)
-            self.__image.close()
-            self.__image = Image.open(self.path)  # reopen / reset image
-            self.__image.size = (self.imwidth, band)  # set size of the tile band
-            self.__image.tile = [self.__tile]  # set tile
-            cropped = self.__image.crop((0, 0, self.imwidth, band))  # crop tile band
-            image.paste(cropped.resize((w, int(band * k) + 1), self.__filter), (0, int(i * k)))
-            i += band
-            j += 1
-        print('\r' + 30 * ' ' + '\r', end='')  # hide printed string
-        return image
+
+
 
     def redraw_figures(self):
         """ Dummy function to redraw figures in the children classes """
@@ -151,13 +119,7 @@ class CanvasImage:
         self.__imframe.rowconfigure(0, weight=1)  # make canvas expandable
         self.__imframe.columnconfigure(0, weight=1)
 
-    def pack(self, **kw):
-        """ Exception: cannot use pack with this widget """
-        raise Exception('Cannot use pack with the widget ' + self.__class__.__name__)
 
-    def place(self, **kw):
-        """ Exception: cannot use place with this widget """
-        raise Exception('Cannot use place with the widget ' + self.__class__.__name__)
 
     # noinspection PyUnusedLocal
     def __scroll_x(self, *args, **kwargs):
@@ -308,7 +270,7 @@ class CanvasImage:
         self.imscale /= self.__delta
         scale /= self.__delta
         # Take appropriate image from the pyramid
-        k = self.imscale * self.__ratio  # temporary coefficient
+        k = self.imscale * self.__ratio  #
         self.__curr_img = min((-1) * int(math.log(k, self.__reduction)), len(self.__pyramid) - 1)
         self.__scale = k * math.pow(self.__reduction, max(0, self.__curr_img))
         #
